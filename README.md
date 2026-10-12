@@ -17,7 +17,9 @@ One **decision map**: three demand scenarios (low, base, high) by three levels o
 | Reactive single source | Orders from one supplier when the project is approved (baseline) |
 | Advance procurement | Orders earlier, before the project is fully approved |
 | Diversified sourcing | Splits the order across two or more suppliers |
-| Reserved extra capacity | Locks in surplus transformer capacity from the start, with one supplier |
+| Reserved extra capacity | Orders a fixed share of extra transformers (10%, 20%, or 30% above the base need) from one supplier at approval, held as spares |
+
+**Fair comparison rule:** every strategy is scored on both delay and total cost. The map names a winner only among strategies that stay within a spending limit (a parameter chosen in week 1), so strategies are compared at similar cost.
 
 ## Scope
 
@@ -36,13 +38,28 @@ Data files are not committed. Every file is rebuilt by the scripts in `pipelines
 
 ## How to run
 
+Requires Python 3.10 or newer.
+
 ```bash
+# 1. Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+# 2. Install the packages
 pip install -r requirements.txt
+
+# 3. Build the data lake
 python pipelines/01_fetch_fred.py     # bronze: transformer price index from FRED
 python pipelines/02_clean_fred.py     # silver: cleaned Parquet table
 ```
 
-More pipeline steps and the simulation are added in weeks 2-5. See `docs/assumptions.md` for every assumption in the model.
+More pipeline steps and the simulation are added in weeks 2-5.
+
+## Documentation
+
+- [`docs/research_proposal.md`](docs/research_proposal.md): the full research proposal
+- [`docs/data_sources.md`](docs/data_sources.md): which datasets are verified and usable
+- [`docs/assumptions.md`](docs/assumptions.md): every assumption in the model, with ranges
 
 ## Status
 
