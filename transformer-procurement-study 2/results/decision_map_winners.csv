@@ -1,0 +1,10 @@
+demand,uncertainty,winner,months_saved,cost_change,mean_delay,baseline_delay
+low,low,reserved_10,1.2004,0.0711,0.4938,1.6942
+low,medium,reserved_20,2.9575,0.1387,0.9564,3.9139
+low,high,reserved_20,5.5046,0.1061,3.5697,9.0743
+base,low,reserved_20,2.3205,0.1369,0.6733,2.9938
+base,medium,reserved_20,4.0826,0.1228,1.895,5.9776
+base,high,reserved_20,6.5621,0.0931,5.3067,11.8688
+high,low,reserved_20,3.7873,0.1064,3.3965,7.1838
+high,medium,reserved_20,5.4331,0.0971,5.4445,10.8776
+high,high,reserved_30,8.8271,0.1419,8.5437,17.3708
