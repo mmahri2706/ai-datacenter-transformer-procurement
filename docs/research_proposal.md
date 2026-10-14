@@ -11,6 +11,7 @@ This study builds one result: a decision map that tells a data center developer,
 
 - **H1:** When transformer lead times are long and unpredictable, diversified and advance procurement beat both reactive buying and extra capacity.
 - **H2:** When lead times are short and stable, extra capacity is enough, and smarter procurement only adds cost.
+- **H3:** Reserved extra capacity beats the other strategies only when unit-level problems (single late or failed units, demand increases) outweigh supplier-wide delay. Against a supplier-wide backlog, extra units from the same supplier do not help.
 
 **The finish line is one figure, the decision map.** Its rows are three demand scenarios (low, base, high) and its columns are three levels of lead-time uncertainty (low, medium, high). Each of the nine cells shows which strategy wins, how many months of delay it saves, and what it costs.
 
@@ -33,15 +34,27 @@ The same simulated projects run under each strategy, so the only thing that chan
 
 **Fair comparison rule:** every strategy is scored on both delay and total cost. The map names a winner only among strategies that stay within a spending limit, a parameter chosen in week 1, so strategies are compared at similar cost.
 
+**Why extra units help, and when they do not.** More transformers do not automatically mean faster completion. If all 10 units from one supplier are held in the same six-month backlog, ordering 12 from that supplier gives 12 late units. The model separates three kinds of problem:
+
+| Problem | What happens | Which strategy helps |
+| --- | --- | --- |
+| Supplier-wide delay | A backlog hits every unit from one supplier at once | Diversified sourcing, by re-sourcing from a healthy supplier. Extra units do not help. |
+| Unit-level problems | One unit arrives late or fails inspection while the others are fine | Reserved extra capacity |
+| Demand increase | The project needs more units than planned | Reserved extra capacity |
+
+The share of delay that is supplier-wide versus unit-level cannot be read directly from public data. It is entered as a documented range and is the first sensitivity test. Advance procurement removes no risk; it starts the clock earlier at a higher cost.
+
 ## 4. Data and how gaps are handled
 
 See `data_sources.md` for the status of each source. Where no public number exists, such as exact lead times, the input is a documented range (low, likely, high), never a single guess. The sensitivity analysis then shows how much each range matters, so a data gap becomes a finding instead of a flaw.
+
+**Week 1 audit summary.** Public data supports transformer *prices* (FRED/BLS producer price index) and *lead-time levels* (U.S. DOE, July 2024; Wood Mackenzie public reports), and gives *demand* in electricity terms (IEA to 2030 and 2035; LBNL/DOE to 2028). It gives **nothing** on supplier backlogs, unit-level failures, procurement premiums, or project schedules. Those stay documented ranges. The audit also found the placeholder lead times (10 / 14 / 20 months) are far shorter than the published evidence (roughly 18 / 28 / 48 months for substation-class units), so they will be replaced in Weeks 2-3.
 
 ## 5. Methods
 
 1. **Build the scenarios.** Turn published low, base, and high demand projections into the number of transformers a set of hypothetical projects would need each year.
 2. **Measure supply risk.** From trade and price data, describe how concentrated transformer imports are and how prices moved. Use this to set the supply and lead-time ranges.
-3. **Simulate.** A Monte Carlo simulation in Python runs each strategy thousands of times per scenario, with random delivery times and shortages drawn from the ranges.
+3. **Simulate.** A Monte Carlo simulation in Python runs each strategy thousands of times per scenario. Each run draws supplier-wide delays and unit-level problems separately, so every strategy faces the same randomly generated world.
 4. **Score and map.** For each run, record delay in months, total cost, and whether the deadline was met. Average the runs and fill the decision map.
 
 **Data lake:** Python, DuckDB, and Parquet, with bronze (raw downloads), silver (cleaned tables), and gold (simulation inputs and results) layers. One command rebuilds everything from scratch.
@@ -66,13 +79,28 @@ The project counts as finished when all four of these exist:
 - Results show how strategies behave under stated scenarios. They are not forecasts of real projects.
 - Findings cover transformers only and say nothing about total data center completion time.
 
-## 8. Timeline
+## 8. Week 1 decisions (what was fixed, and why)
+
+The research question, hypotheses, four strategies, nine-cell map, and eight-week plan are **unchanged**. Week 1 fixed the following, with full detail in `assumptions.md`:
+
+| Decision | What was fixed | Why |
+| --- | --- | --- |
+| Delay | `max(0, ready date - t_plan)`, where the ready date is the arrival of the last needed unit | One clear number in months; spares help only by letting the project skip the slowest units |
+| Cost | Total procurement cost in units of one transformer's price, including premiums, expected fees, top-ups, and salvage. Delay's business cost is excluded and reported as a break-even instead | No verified dollar prices; delay costs are project-specific |
+| Spending limit | A winner's average cost may be at most 15% above the baseline's, with results also shown at 0-30% | Makes strategies comparable at similar cost; 15% is a stated policy choice, not a measured value |
+| Transformer class | The primary model covers **substation-class power transformers**, the units that gate a data center's grid connection. Medium-voltage distribution units are an optional secondary run | The public lead-time evidence is for this class; lumping all "electrical transformers" together would blur it. This narrows the scope wording but not the question. |
+| Sources | Two sources were **added** to the plan: LBNL/DOE for U.S.-specific demand, and the Census Bureau trade API as an alternative to Comtrade | The original plan did not include a U.S.-specific demand source; Census may be easier than Comtrade for U.S. imports. Neither replaces a planned source. |
+| Placeholders | Kept in the code, now each linked to the evidence found or marked as an assumption | Prevents the rough map from being mistaken for a finding |
+
+**What the first rough map can and cannot tell us.** In the placeholder run, reserved extra capacity wins all nine cells. That is not a result: it likely comes from placeholder rules about demand increases (see risk R2 in `assumptions.md`) and must survive the sensitivity tests before being believed. Hypothesis H2 has not been tested.
+
+## 9. Timeline
 
 The first version of the decision map is due by the end of week 5.
 
 | Weeks | Objective | Deliverable |
 | --- | --- | --- |
-| 1 | Lock the question, scope, and strategy definitions; audit data sources | One-page plan and source list |
+| 1 (done) | Lock the question, scope, and strategy definitions; audit data sources | Proposal, source audit, assumptions log, next-steps checklist |
 | 2-3 | Build the bronze and silver layers; set demand scenarios and lead-time ranges | Cleaned data and scenario tables |
 | 4-5 | Build the simulation and run all four strategies | First decision map (checkpoint) |
 | 6 | Sensitivity analysis and the 2022-2024 sanity check | Sensitivity chart |

@@ -1,8 +1,9 @@
 """Bronze layer: download the transformer producer price index from FRED.
 
-Series: Producer Price Index by Industry, Power, Distribution, and Specialty
-Transformer Manufacturing. The series ID below must be confirmed in the week 1
-data audit (open https://fred.stlouisfed.org/series/<ID> and check the title).
+Series: Producer Price Index by Industry: Electric Power and Specialty Transformer
+Manufacturing (monthly, not seasonally adjusted, index Jun 1981 = 100).
+Week 1 audit: the series page was opened and the title and ID matched; the CSV
+download itself still needs to be tested on your own computer.
 
 The raw file is saved untouched, with the download date in the file name.
 """
@@ -12,7 +13,7 @@ from pathlib import Path
 
 import requests
 
-SERIES_ID = "PCU335311335311"  # confirm in week 1 audit
+SERIES_ID = "PCU335311335311"  # verified against the FRED series page in week 1
 URL = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={SERIES_ID}"
 BRONZE_DIR = Path(__file__).resolve().parent.parent / "data" / "bronze"
 
